@@ -24,7 +24,7 @@ const router = Router();
 router.get("/:userId", authenticateToken, checkRoleMiddleware, (req: CustomRequest, res: Response) => {
 	try {
 		// check if user exists
-		const { user_id_in_params } = req.params;
+		const user_id_in_params = req.params.userId as string;
 		const user = users.find((u) => u.userId === user_id_in_params);
 		
 		if (!user) {
@@ -37,6 +37,13 @@ router.get("/:userId", authenticateToken, checkRoleMiddleware, (req: CustomReque
 		// get user items
 		
 		const userItems = items.filter((item) => item.userId === user_id_in_params);
+		
+		if (userItems.length === 0) {
+			return res.status(404).json({
+				success: false,
+				message: `items for user ID ${user_id_in_params} not found`,
+			});
+		}
 		
 		return res.status(200).json({
 			success: true,
