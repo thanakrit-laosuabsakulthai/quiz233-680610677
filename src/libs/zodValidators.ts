@@ -10,8 +10,6 @@ const zQuantity  = z.number();
 const zCategory = z.enum(['Electronics','Clothing','Household','Others'], {message: "Category must be either Electronics,Clothing,Household or Others"});
 
 export const zItemPostBody = z.object({
-  userId: zUserId,
-  itemId: zItemId,
   product_name: zProduct_Name,
   unit_price: zUnit_Price,
   quantity: zQuantity,
@@ -28,6 +26,5 @@ export const zItemPutBody = z.object({
 });
 
 export const zItemDeleteBody = z.object({
-  userId: zUserId,
   itemId: zItemId,
 });

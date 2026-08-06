@@ -16,55 +16,86 @@ const router = Router();
 
 // POST /api/vXXX/auth/login
 router.post("/login", (req: Request, res: Response) => {
-  try { 
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-    });
-  } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: "Something is wrong, please try again",
-      error: err,
-    });
-  }
+	try { 
+		
+		const { username, password } = req.body;
+		
+		// check if user exists
+		
+		const user = users.find((u: User) => u.username === username && u.password === password);
+		if (!user) {
+			return res.status(401).json({
+				success: false,
+				message: "Username or password is incorrect",
+			});
+		}
+		
+		// get jwt
+		
+		const secretKey = process.env.JWT_SECRET_KEY || "mysecretkey";
+		let payload = {
+			username: user.username,
+			userId: user.userId,
+		};
+		
+		const token = jwt.sign(payload, secretKey, { expiresIn: "10m" });
+		
+		// save token
+		
+		user.tokens = user.tokens || [];
+		user.tokens.push(token);
+		
+		return res.status(200).json({
+			success: true,
+			message: "Login successful",
+			token: token,
+		});
+		
+		
+	} catch (err) {
+		return res.status(500).json({
+			success: false,
+			message: "Something is wrong, please try again",
+			error: err,
+		});
+	}
 });
 
 // POST /api/vXXX/auth/logout
 router.post("/logout", authenticateToken, (req: Request, res: Response) => {
-  try {
-    const payload = (req as any).user;
-    const token = (req as any).token;
+	try {
+		const payload = (req as any).user;
+		const token = (req as any).token;
 
-    // find user by payload.username
-    const user = users.find((u: User) => u.username === payload.username);
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-    // check if token exists in user.tokens
-    if (!user.tokens || !user.tokens.includes(token)) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid token",
-      });
-    }
+		// find user by payload.username
+		const user = users.find((u: User) => u.username === payload.username);
+		if (!user) {
+			return res.status(401).json({
+				success: false,
+				message: "User not found",
+			});
+		}
+		// check if token exists in user.tokens
+		if (!user.tokens || !user.tokens.includes(token)) {
+			return res.status(401).json({
+				success: false,
+				message: "Invalid token",
+			});
+		}
 
-    // if token exists, remove the token from user.tokens
-    user.tokens = user.tokens?.filter((t) => t !== token);
-    return res.status(200).json({
-      success: true,
-      message: "Logout successful",
-    });
-  } catch (err) {
-    return res.status(500).json({
-      success: false,
-      message: "Something is wrong, please try again",
-      error: err,
-    });
-  }
+		// if token exists, remove the token from user.tokens
+		user.tokens = user.tokens?.filter((t) => t !== token);
+		return res.status(200).json({
+			success: true,
+			message: "Logout successful",
+		});
+	} catch (err) {
+		return res.status(500).json({
+			success: false,
+			message: "Something is wrong, please try again",
+			error: err,
+		});
+	}
 });
 
 // POST /api/vXXX/auth/reset
