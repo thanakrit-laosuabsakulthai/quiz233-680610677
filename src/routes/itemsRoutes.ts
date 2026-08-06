@@ -64,7 +64,7 @@ router.post("/:userId", authenticateToken, checkRoleMiddleware, (req: CustomRequ
 	try {
 	
 	const user_id_in_params = req.params.userId as string;
-	const itemData = req.body as Item;
+	const itemData = req.body as Pick<Item, "product_name" | "unit_price" | "quantity" | "category">;
 	
 	// validate body using zod
 	const validationResult = zItemPostBody.safeParse(itemData);
@@ -109,7 +109,7 @@ router.post("/:userId", authenticateToken, checkRoleMiddleware, (req: CustomRequ
 
 // Delete /api/vXXX/items/:userId
 
-router.delete("/:userId/:itemId", authenticateToken, checkRoleMiddleware, (req: CustomRequest, res: Response) => {
+router.delete("/:userId", authenticateToken, checkRoleMiddleware, (req: CustomRequest, res: Response) => {
 	const user_id_in_params = req.params.userId as string;
 	const body = req.body as { itemId: string };
 
